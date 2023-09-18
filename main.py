@@ -39,14 +39,25 @@ TODO Dentro do contexto dessa implementação, basta chamarmos a função genera
 """
 Pela falta de acesso a API, implemetei uma tupla com mensagens genéricas que são concatenandas com o usuário de maneira aleatória. Ou seja, o fluxo ETL ainda continua. Os ID's dos usuários são extraídos da planilha, cada usuário recebe uma mensagem escolhida de uma tupla de mensagens e posteriormente as mensagens são carregadas na api santander dev week
 """
-messages = ( "Invista no seu futuro", "Experimente o plano Vip. Essa será uma ótima decisão", "Já conhece o lounge PythonBank? Experimente!")
+messages = ( "Invista no seu futuro", "Experimente o plano Vip. Essa será uma ótima decisão", "Já conhece o lounge PythonBank? Experimente!" )
 
-def generate_news():
+def generate_news(user):
     for m in messages:
         random_number = random.randrange(0, 2)
-        for user in users:
-            user_message = f"Olá, {user['name']}. {messages[random_number]}"
+        user_message = f"Olá, {user['name']}, {messages[random_number]}"
     return user_message
 
+for user in users:
+    news = generate_news(user)
+    user['news'].append({
+        "description": news
+    })
 
-    
+# Load - Carregar os dados atualizados nos respectivos ID's 
+def update_user(user):
+    response = requests.put(f"{sdw2023_api_url}/users/{user['id']}", json=user)
+    return True if response.status_code == 200 else False
+
+for user in users:
+    success = update_user(user)
+    print(f"User {user['name']} updated!")    
